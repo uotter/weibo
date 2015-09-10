@@ -98,7 +98,7 @@ def tfidf_compute_train(corpus_file, weiboindex, category, readsize):
     return featuresets
 
 
-def tfidf_compute_test(test_file, weiboindex, readsize):
+def tfidf_compute_test(test_file, category, weiboindex, readsize):
     lines = test_file.readlines(readsize)
     corpus = []
     featuresets = []
