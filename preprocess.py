@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 
 f_train = open("C://tianchi//weibo201508//weibo_train_data//weibo_train_data.txt")  # 返回一个文件对象
+f_test = open("C://tianchi//weibo201508//weibo_predict_data//weibo_predict_data.txt")
 i = 0
 line = f_train.readline().decode("utf-8")  # 调用文件的 readline()方法
 # lines = f.readlines()
@@ -58,10 +59,20 @@ def get_words(weibo_str):
     return item_words_dic
 
 
-def tfidf_compute_train(corpus_file, weiboindex, category, readsize):
-    lines = corpus_file.readlines(readsize)
+def tfidf_compute(corpus_file, test_file, weiboindex, readsize):
+    if readsize == -1:
+        lines = corpus_file.readlines()
+    else:
+        lines = corpus_file.readlines(readsize)
+
+    train_size = len(lines)
+
+    test_lines = test_file.readlines()
+    test_size = len(test_lines)
+
+    lines.append(test_lines)
+
     corpus = []
-    featuresets = []
 
     for single_line in lines:
         single_line = single_line.decode("utf-8").split('\t')
@@ -79,23 +90,39 @@ def tfidf_compute_train(corpus_file, weiboindex, category, readsize):
         vectorizer.fit_transform(corpus))  # 第一个fit_transform是计算tf-idf，第二个fit_transform是将文本转为词频矩阵
     word = vectorizer.get_feature_names()  # 获取词袋模型中的所有词语
     weight = tfidf.toarray()  # 将tf-idf矩阵抽取出来，元素a[i][j]表示j词在i类文本中的tf-idf权重
+
+    trainset_like_para = []
+    trainset_forward_para = []
+    trainset_comment_para = []
+
+    testset_para = []
+    test_textid_userid_para = []
+
     for i in range(len(weight)):  # 打印每个文本的tf-idf词语权重，第一个for遍历所有文本，第二个for便利某一类文本下的词语权重
         single_line = lines[i].decode("utf-8").split('\t')
-        like = single_line[5]
-        forward = single_line[3]
-        comment = single_line[4]
-        features = {}
-        print u"-------这里输出第", i, u"个文本的词语tf-idf权重------"
-        for j in range(len(word)):
-            features[word[j]] = weight[i][j]
-            # print word[j], weight[i][j]
-        if category == "like":
-            featuresets.append((features, like))
-        elif category == "forward":
-            featuresets.append((features, forward))
-        elif category == "comment":
-            featuresets.append((features, comment))
-    return featuresets
+        if i < train_size:
+            like = single_line[5]
+            forward = single_line[3]
+            comment = single_line[4]
+            features = {}
+            print u"-------这里输出第", i, u"个文本的词语tf-idf权重------"
+            for j in range(len(word)):
+                features[word[j]] = weight[i][j]
+                # print word[j], weight[i][j]
+            trainset_like_para.append((features, like))
+            trainset_forward_para.append((features, forward))
+            trainset_comment_para.append((features, comment))
+        else:
+            features = {}
+            textid = single_line[0]
+            userid = single_line[1]
+            print u"-------这里输出第", i, u"个文本的词语tf-idf权重------"
+            for j in range(len(word)):
+                features[word[j]] = weight[i][j]
+            testset_para.append(features)
+            test_textid_userid_para.append(textid+'\t'+userid)
+
+    return trainset_like_para, trainset_forward_para, trainset_comment_para, testset_para, test_textid_userid_para
 
 
 def tfidf_compute_test(test_file, category, weiboindex, readsize):
@@ -139,11 +166,30 @@ def tfidf_compute_test(test_file, category, weiboindex, readsize):
 
 
 corpussize = 100
-featuresets = tfidf_compute_train(f_train, 6, "comment", corpussize)
-trainset, testset = featuresets[int(corpussize * 0.1):], featuresets[:int(corpussize * 0.1)]
-classifier = nltk.NaiveBayesClassifier.train(trainset)
+trainset_like, trainset_forward, trainset_comment, testset,test_textid_userid = tfidf_compute(f_train, f_test, 6, corpussize)
+classifier_like = nltk.NaiveBayesClassifier.train(trainset_like)
+classifier_forward = nltk.NaiveBayesClassifier.train(trainset_forward)
+classifier_comment = nltk.NaiveBayesClassifier.train(trainset_comment)
+
+test_like_result = []
+test_forward_result = []
+test_comment_result = []
+
+for text in testset:
+    like_predict = classifier_like.classify(text)
+    forward_predict = classifier_forward.classify(text)
+    comment_predict = classifier_comment.classify(text)
+    test_like_result.append(like_predict)
+    test_forward_result.append(forward_predict)
+    test_comment_result.append(comment_predict)
+
+for i in range(len(test_like_result)):
+    print i, test_like_result, test_forward_result, test_comment_result
+
+
+
 # print type(classifier.classify(testset))
-print 'accuracy =', nltk.classify.accuracy(classifier, testset)
+# print 'accuracy =', nltk.classify.accuracy(classifier, testset)
 
 # single_line = lines[77].decode("utf-8").split('\t')
 # str_without_http = preprocess(single_line[6].replace("\n", "").replace(" ", ""))
