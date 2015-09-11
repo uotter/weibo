@@ -9,12 +9,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 f_train = open("C://tianchi//weibo201508//weibo_train_data//weibo_train_data.txt")  # 返回一个文件对象
 f_test = open("C://tianchi//weibo201508//weibo_predict_data//weibo_predict_data.txt")
-i = 0
-line = f_train.readline().decode("utf-8")  # 调用文件的 readline()方法
-# lines = f.readlines()
-train_lines_num = len(f_train.readlines())
-print "total lines = ", train_lines_num
-f_train.seek(0, 0)
+# i = 0
+# line = f_train.readline().decode("utf-8")  # 调用文件的 readline()方法
+# # lines = f.readlines()
+# train_lines_num = len(f_train.readlines())
+# print "total lines = ", train_lines_num
+# f_train.seek(0, 0)
 stop_words_file_c = open("C://tianchi//weibo201508//stopwords_c.txt")
 stop_words_file_e = open("C://tianchi//weibo201508//stopwords_e.txt")
 
@@ -59,7 +59,7 @@ def get_words(weibo_str):
     return item_words_dic
 
 
-def tfidf_compute(corpus_file, test_file, weiboindex, readsize):
+def tfidf_compute(corpus_file, test_file, weiboindex, readsize, testreadsize):
     if readsize == -1:
         lines = corpus_file.readlines()
     else:
@@ -67,16 +67,21 @@ def tfidf_compute(corpus_file, test_file, weiboindex, readsize):
 
     train_size = len(lines)
 
-    test_lines = test_file.readlines()
+    if testreadsize == -1:
+        test_lines = test_file.readlines()
+    else:
+        test_lines = test_file.readlines(testreadsize)
     test_size = len(test_lines)
 
-    lines.append(test_lines)
+    lines.extend(test_lines)
 
     corpus = []
-
-    for single_line in lines:
-        single_line = single_line.decode("utf-8").split('\t')
-        str_without_http = preprocess(single_line[weiboindex].replace("\n", "").replace(" ", ""))
+    for index in range(len(lines)):
+        single_line = lines[index].decode("utf-8").split('\t')
+        if index < train_size:
+            str_without_http = preprocess(single_line[weiboindex].replace("\n", "").replace(" ", ""))
+        else:
+            str_without_http = preprocess(single_line[3].replace("\n", "").replace(" ", ""))
         if str_without_http is not None:
             seg_list = jieba.cut(str_without_http)
             seg_result = []
@@ -120,7 +125,7 @@ def tfidf_compute(corpus_file, test_file, weiboindex, readsize):
             for j in range(len(word)):
                 features[word[j]] = weight[i][j]
             testset_para.append(features)
-            test_textid_userid_para.append(textid+'\t'+userid)
+            test_textid_userid_para.append(textid + '\t' + userid + '\t')
 
     return trainset_like_para, trainset_forward_para, trainset_comment_para, testset_para, test_textid_userid_para
 
@@ -166,7 +171,9 @@ def tfidf_compute_test(test_file, category, weiboindex, readsize):
 
 
 corpussize = 100
-trainset_like, trainset_forward, trainset_comment, testset,test_textid_userid = tfidf_compute(f_train, f_test, 6, corpussize)
+testsize = 100
+trainset_like, trainset_forward, trainset_comment, testset, test_textid_userid = tfidf_compute(f_train, f_test, 6,
+                                                                                               corpussize, testsize)
 classifier_like = nltk.NaiveBayesClassifier.train(trainset_like)
 classifier_forward = nltk.NaiveBayesClassifier.train(trainset_forward)
 classifier_comment = nltk.NaiveBayesClassifier.train(trainset_comment)
@@ -184,7 +191,7 @@ for text in testset:
     test_comment_result.append(comment_predict)
 
 for i in range(len(test_like_result)):
-    print i, test_like_result, test_forward_result, test_comment_result
+    print test_textid_userid[i]+str(test_like_result[i])+','+str(test_forward_result[i])+','+str(test_comment_result[i])
 
 
 
