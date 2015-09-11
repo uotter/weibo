@@ -7,16 +7,16 @@ from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 
-f_train = open(".weibo_train_data//weibo_train_data.txt")  # 返回一个文件对象
-f_test = open(".weibo_predict_data//weibo_predict_data.txt")
+f_train = open(".//data//weibo_train_data//weibo_train_data.txt")  # 返回一个文件对象
+f_test = open(".//data//weibo_predict_data//weibo_predict_data.txt")
 # i = 0
 # line = f_train.readline().decode("utf-8")  # 调用文件的 readline()方法
 # # lines = f.readlines()
 # train_lines_num = len(f_train.readlines())
 # print "total lines = ", train_lines_num
 # f_train.seek(0, 0)
-stop_words_file_c = open(".//stopwords_c.txt")
-stop_words_file_e = open(".//stopwords_e.txt")
+stop_words_file_c = open(".//dic//stopwords_c.txt")
+stop_words_file_e = open(".//dic//stopwords_e.txt")
 
 stopword_c = stop_words_file_c.readline().decode("utf-8")
 stop_words_c = []
@@ -60,17 +60,20 @@ def get_words(weibo_str):
 
 
 def tfidf_compute(corpus_file, test_file, weiboindex, readsize, testreadsize):
+
+    total_train_lines = corpus_file.readlines()
+    total_test_lines = test_file.readlines()
     if readsize == -1:
-        lines = corpus_file.readlines()
+        lines = total_train_lines
     else:
-        lines = corpus_file.readlines(readsize)
+        lines = total_train_lines[:readsize]
 
     train_size = len(lines)
 
     if testreadsize == -1:
-        test_lines = test_file.readlines()
+        test_lines = total_test_lines
     else:
-        test_lines = test_file.readlines(testreadsize)
+        test_lines = total_test_lines[:testreadsize]
     test_size = len(test_lines)
 
     lines.extend(test_lines)
@@ -110,7 +113,7 @@ def tfidf_compute(corpus_file, test_file, weiboindex, readsize, testreadsize):
             forward = single_line[3]
             comment = single_line[4]
             features = {}
-            print u"-------这里输出第", i, u"个文本的词语tf-idf权重------"
+            print u"第", i, u"个训练文本的词语tf-idf权重计算完毕"
             for j in range(len(word)):
                 features[word[j]] = weight[i][j]
                 # print word[j], weight[i][j]
@@ -121,7 +124,7 @@ def tfidf_compute(corpus_file, test_file, weiboindex, readsize, testreadsize):
             features = {}
             textid = single_line[0]
             userid = single_line[1]
-            print u"-------这里输出第", i, u"个文本的词语tf-idf权重------"
+            print u"第", (i-train_size), u"个测试文本的词语tf-idf权重计算完毕"
             for j in range(len(word)):
                 features[word[j]] = weight[i][j]
             testset_para.append(features)
@@ -171,7 +174,7 @@ def tfidf_compute_test(test_file, category, weiboindex, readsize):
 
 
 corpussize = 100
-testsize = 100
+testsize = -1
 trainset_like, trainset_forward, trainset_comment, testset, test_textid_userid = tfidf_compute(f_train, f_test, 6,
                                                                                                corpussize, testsize)
 classifier_like = nltk.NaiveBayesClassifier.train(trainset_like)
@@ -191,7 +194,7 @@ for text in testset:
     test_comment_result.append(comment_predict)
 
 for i in range(len(test_like_result)):
-    print test_textid_userid[i]+str(test_like_result[i])+','+str(test_forward_result[i])+','+str(test_comment_result[i])
+    print i, test_textid_userid[i]+str(test_like_result[i])+','+str(test_forward_result[i])+','+str(test_comment_result[i])
 
 
 
