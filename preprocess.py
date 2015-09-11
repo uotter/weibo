@@ -7,16 +7,16 @@ from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 
-f_train = open("C://tianchi//weibo201508//weibo_train_data//weibo_train_data.txt")  # 返回一个文件对象
-f_test = open("C://tianchi//weibo201508//weibo_predict_data//weibo_predict_data.txt")
+f_train = open(".weibo_train_data//weibo_train_data.txt")  # 返回一个文件对象
+f_test = open(".weibo_predict_data//weibo_predict_data.txt")
 # i = 0
 # line = f_train.readline().decode("utf-8")  # 调用文件的 readline()方法
 # # lines = f.readlines()
 # train_lines_num = len(f_train.readlines())
 # print "total lines = ", train_lines_num
 # f_train.seek(0, 0)
-stop_words_file_c = open("C://tianchi//weibo201508//stopwords_c.txt")
-stop_words_file_e = open("C://tianchi//weibo201508//stopwords_e.txt")
+stop_words_file_c = open(".//stopwords_c.txt")
+stop_words_file_e = open(".//stopwords_e.txt")
 
 stopword_c = stop_words_file_c.readline().decode("utf-8")
 stop_words_c = []
