@@ -129,17 +129,19 @@ def mnbclf_compute(train_file, test_file, train_text_index, test_text_index, tra
     tfidf_train = tv.fit_transform(train_text_arr)
     tv2 = TfidfVectorizer(vocabulary=tv.vocabulary_)
     tfidf_test = tv2.fit_transform(test_text_arr)
-    # x_train, x_test, y_train, y_test = train_test_split(tfidf_train, forward_train, test_size=0.2)
-    # clf = MultinomialNB().fit(x_train, y_train)
-    clf = MultinomialNB().fit(tfidf_train, forward_train)
+    x_train, x_test, y_train, y_test = train_test_split(tfidf_train, comment_train, test_size=0.2)
+    clf = MultinomialNB().fit(x_train, y_train)
+    # clf = MultinomialNB().fit(tfidf_train, forward_train)
     # clf_forward = MultinomialNB().fit(tfidf_train, forward_train)
     # clf_comment = MultinomialNB().fit(tfidf_train, comment_train)
     # clf_like = MultinomialNB().fit(tfidf_train, like_train)
 
-    doc_class_predicted = clf.predict(tfidf_test)
-    return doc_class_predicted
+    doc_class_predicted = clf.predict(x_test)
+    # doc_class_predicted = clf.predict(tfidf_test)
     # print(doc_class_predicted)
-    # print(np.mean(doc_class_predicted == y_test))
+    print(np.mean(doc_class_predicted == y_test))
+    return doc_class_predicted
+
 
 
 def tfidf_compute(corpus_file, test_file, weiboindex, readsize, testreadsize):
@@ -174,11 +176,6 @@ def tfidf_compute(corpus_file, test_file, weiboindex, readsize, testreadsize):
                 if orginal_word not in stop_words_c and filter(lambda c: c not in string.letters, orginal_word):
                     seg_result.append(orginal_word)
             corpus.append(' '.join(seg_result))
-
-    tv = TfidfVectorizer(sublinear_tf=True, max_df=0.5, stop_words=stopword_c)
-    tfidf_train_2 = tv.fit_transform(corpus)
-    tv2 = TfidfVectorizer(vocabulary=tv.vocabulary_)
-    tfidf_test_2 = tv2.fit_transform(newsgroups_test.data)
 
     vectorizer = CountVectorizer()  # 该类会将文本中的词语转换为词频矩阵，矩阵元素a[i][j] 表示j词在i类文本下的词频
     transformer = TfidfTransformer()  # 该类会统计每个词语的tf-idf权值
@@ -262,8 +259,8 @@ def tfidf_compute_test(test_file, category, weiboindex, readsize):
     return featuresets
 
 
-corpussize = 10000
-testsize = -1
+corpussize = -1
+testsize = 1000
 result = mnbclf_compute(f_train, f_test, 6, 3, corpussize, testsize)
 print len(result)
 outfile = open('./result.txt', 'w')
