@@ -11,6 +11,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.naive_bayes import MultinomialNB
+from sklearn import linear_model
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import classification_report
 
@@ -43,15 +44,13 @@ while stopword_c:
 #     print word
 
 
-
-
 def preprocess(weibo_str):
     if weibo_str.find("http"):
         start = weibo_str.find("http")
         remove_str = weibo_str[start:start + 19]
         return weibo_str.replace(remove_str, "")
     else:
-        weibo_str
+        return weibo_str
 
 
 def get_words(weibo_str):
@@ -106,9 +105,9 @@ def file_to_arr(lines, text_index, train_or_test):
         return corpus
 
 
-def mnbclf_compute(train_file, test_file, train_text_index, test_text_index, train_read_size, test_read_size):
-    total_train_lines = train_file.readlines()
-    total_test_lines = test_file.readlines()
+def feature_tfidf(train_file, test_file, train_text_index, test_text_index, train_read_size, test_read_size):
+    total_train_lines = train_file.readlines(1000000)
+    total_test_lines = test_file.readlines(1000000)
     if train_read_size == -1:
         train_lines = total_train_lines
     else:
@@ -125,23 +124,61 @@ def mnbclf_compute(train_file, test_file, train_text_index, test_text_index, tra
     train_text_arr, forward_train, comment_train, like_train = file_to_arr(train_lines, train_text_index, 'train')
     test_text_arr = file_to_arr(test_lines, test_text_index, 'test')
 
+    # debug start
+    train_text_arr_nozero = []
+    comment_train_nozero = []
+    for i in range(len(comment_train)):
+        if int(comment_train[i]) != 0:
+            train_text_arr_nozero.append(train_text_arr[i])
+            comment_train_nozero.append(comment_train[i])
+    train_text_arr = train_text_arr_nozero
+    comment_train = comment_train_nozero
+    # debug end
+
     tv = TfidfVectorizer(sublinear_tf=True, max_df=0.5)
     tfidf_train = tv.fit_transform(train_text_arr)
     tv2 = TfidfVectorizer(vocabulary=tv.vocabulary_)
     tfidf_test = tv2.fit_transform(test_text_arr)
+
+    return tfidf_train, tfidf_test, forward_train, comment_train, like_train
+
+
+def mnbclf_compute(train_file, test_file, train_text_index, test_text_index, train_read_size, test_read_size):
+    tfidf_train, tfidf_test, forward_train, comment_train, like_train = feature_tfidf(train_file, test_file,
+                                                                                      train_text_index, test_text_index,
+                                                                                      train_read_size, test_read_size)
+
     x_train, x_test, y_train, y_test = train_test_split(tfidf_train, comment_train, test_size=0.2)
     clf = MultinomialNB().fit(x_train, y_train)
-    # clf = MultinomialNB().fit(tfidf_train, forward_train)
     # clf_forward = MultinomialNB().fit(tfidf_train, forward_train)
     # clf_comment = MultinomialNB().fit(tfidf_train, comment_train)
     # clf_like = MultinomialNB().fit(tfidf_train, like_train)
-
-    doc_class_predicted = clf.predict(x_test)
-    # doc_class_predicted = clf.predict(tfidf_test)
+    doc_class_predicted = clf.predict(tfidf_test)
     # print(doc_class_predicted)
     print(np.mean(doc_class_predicted == y_test))
     return doc_class_predicted
 
+
+def lassoclf_compute(train_file, test_file, train_text_index, test_text_index, train_read_size, test_read_size):
+    tfidf_train, tfidf_test, forward_train, comment_train, like_train = feature_tfidf(train_file, test_file,
+                                                                                      train_text_index, test_text_index,
+                                                                                      train_read_size, test_read_size)
+
+    x_train, x_test, y_train, y_test = train_test_split(tfidf_train, comment_train, test_size=0.2)
+    y_train_int = [int(element) for element in y_train]
+    y_test_int = [int(element) for element in y_test]
+    regr = linear_model.Lasso(alpha=0.3)
+    regr.fit(x_train, y_train_int)
+
+    coef_file = open('./coef.txt', 'w')
+    for e in regr.coef_:
+        if e!=0:
+            coef_file.write(str(e) + '\n')
+    coef_file.close()
+
+    doc_class_predicted = [int(element) for element in regr.predict(x_test)]
+    print regr.score(x_test, y_test_int)
+    return doc_class_predicted
 
 
 def tfidf_compute(corpus_file, test_file, weiboindex, readsize, testreadsize):
@@ -259,13 +296,13 @@ def tfidf_compute_test(test_file, category, weiboindex, readsize):
     return featuresets
 
 
-corpussize = -1
+corpussize = 10000
 testsize = 1000
-result = mnbclf_compute(f_train, f_test, 6, 3, corpussize, testsize)
+result = lassoclf_compute(f_train, f_test, 6, 3, corpussize, testsize)
 print len(result)
 outfile = open('./result.txt', 'w')
 for idx in range(len(result)):
-    outfile.write(str(idx) + ' ' + result[idx]+'\n')
+    outfile.write(str(idx) + ' ' + str(result[idx]) + '\n')
 outfile.close()
 
 # trainset_like, trainset_forward, trainset_comment, testset, test_textid_userid = tfidf_compute(f_train, f_test, 6,
