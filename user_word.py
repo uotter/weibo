@@ -2,8 +2,9 @@
 __author__ = 'M'
 
 import time
+import datetime
 
-f_train = open(".//data//weibo_train_data//weibo_train_data.txt")  # ·µ»ØÒ»¸öÎÄ¼ş¶ÔÏó
+f_train = open(".//data//weibo_train_data//weibo_train_data.txt")  # ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
 f_test = open(".//data//weibo_predict_data//weibo_predict_data.txt")
 
 
@@ -24,10 +25,10 @@ def sort_by_value_dec(d):
     return [backitems[index][1] for index in range(0, len(backitems))]
 
 
-# Ê¹ÓÃµÄÌØÕ÷ÏòÁ¿ÖĞµÄ¼¸¸öÖ÷ÒªÌØÕ÷ËµÃ÷
-# ÌØÕ÷ÏòÁ¿ v = v1, v2, v3, v4...
-# v1: Î¢²©µÄÓÃ»§idÔÚÑµÁ·¼¯ÖĞËù·¢¹ıµÄÎ¢²©µÄÆ½¾ù×ª·¢¡¢ÆÀÂÛ¡¢µãÔŞÊı
-# v2, v3, v4...: µÃµ½µÄ×ª·¢¡¢ÆÀÂÛ¡¢µãÔŞÊı×î¶àµÄ´Ê»ãµÄ¼¯ºÏ×é³ÉµÄÌØÕ÷´Ê¼¯£¬¶ÔÓÚÒ»¸ö¾ßÌåµÄÌØÕ÷ÏòÁ¿£¬Ã¿¸öÔªËØµÄÖµ¶ÔÓ¦ÓÚ¸Ã´ÊÔÚ¸ÃÓï¾äÖĞ³öÏÖµÄ´ÎÊı£¬¼´tf
+# Ê¹ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ĞµÄ¼ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½
+# ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ v = v1, v2, v3, v4...
+# v1: Î¢ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½idï¿½ï¿½Ñµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¢ï¿½ï¿½ï¿½ï¿½Æ½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+# v2, v3, v4...: ï¿½Ãµï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´Ê»ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½ï¿½Ôªï¿½Øµï¿½Öµï¿½ï¿½Ó¦ï¿½Ú¸Ã´ï¿½ï¿½Ú¸ï¿½ï¿½ï¿½ï¿½ï¿½Ğ³ï¿½ï¿½ÖµÄ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tf
 
 start = time.time()
 f_train_lines = f_train.readlines()
@@ -43,30 +44,39 @@ user_c = {}
 user_l = {}
 user_count = {}
 start = time.time()
-for line in f_train_lines:
-    single_line = line.decode("utf-8").split('\t')
+train_total_num = len(f_train_lines)
+start_inside = time.time()
+for index in range(len(f_train_lines)):
+    single_line = f_train_lines[index].decode("utf-8").split('\t')
     userid = single_line[0]
     f_num = int(single_line[3])
     c_num = int(single_line[4])
     l_num = int(single_line[5])
     user_count_current = 1
-    if userid in user_count:
+    if user_count.has_key(userid):
         user_count_current = user_count[userid]
         user_count[userid] += 1
     else:
         user_count[userid] = 1
-    if userid in user_f.keys():
+    if user_f.has_key(userid):
         user_f[userid] = (user_f[userid] + f_num) / user_count_current
     else:
         user_f[userid] = f_num / user_count_current
-    if userid in user_c.keys():
+    if user_c.has_key(userid):
         user_c[userid] = (user_c[userid] + c_num) / user_count_current
     else:
         user_c[userid] = c_num / user_count_current
-    if userid in user_l.keys():
+    if user_l.has_key(userid):
         user_l[userid] = (user_l[userid] + l_num) / user_count_current
     else:
         user_l[userid] = l_num / user_count_current
+    if index % 100000 == 0:
+        end_inside = time.time()
+        print 'NO. ' + str(index) + ' completed with ' + str(
+            (end_inside - start_inside)) + 's, and  still left ' + str(
+            train_total_num - index) + ' with ' + str(
+            (end_inside - start_inside) * (train_total_num - index) / 100000) + 's'
+        start_inside = time.time()
 end = time.time()
 print 'get user map fininshed with: ' + str(end - start)
 test_userid_value = []
@@ -79,11 +89,11 @@ for line in f_test_lines:
     out_f = 0
     out_c = 0
     out_l = 0
-    if userid in user_f.keys():
+    if user_f.has_key(userid):
         out_f = user_f[userid]
-    if userid in user_c.keys():
+    if user_c.has_key(userid):
         out_c = user_c[userid]
-    if userid in user_l.keys():
+    if user_l.has_key(userid):
         out_l = user_l[userid]
 
     out_str = out_str + str(out_f) + ',' + str(out_c) + ',' + str(out_l) + '\n'
