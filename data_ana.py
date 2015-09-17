@@ -1,23 +1,27 @@
+import io
 __author__ = 'M'
 
-f_train = open(".//data//weibo_train_data//weibo_train_data.txt")
-f_test = open(".//data//weibo_predict_data//weibo_predict_data.txt")
-train_lines = f_train.readlines()
-test_lines = f_test.readlines()
+# f_train = open(".//data//weibo_train_data//weibo_train_data_new.txt")
+# f_test = open(".//data//weibo_predict_data//weibo_predict_data_new.txt")
+#
+# train_lines = f_train.readlines()
+# test_lines = f_test.readlines()
 
-total_test_num = len(test_lines)
-userids = set()
 
-for lines in train_lines:
-    single_line = lines.decode("utf-8").split('\t')
-    userid = single_line[0]
-    userids.add(userid)
+def caculate_userids_proportion(train_lines, test_lines):
+    total_test_num = len(test_lines)
+    userids = set()
 
-count = 0
-for lines in test_lines:
-    single_line = lines.decode("utf-8").split('\t')
-    userid = single_line[0]
-    if userid in userids:
-        count += 1
+    for lines in train_lines:
+        single_line = lines.decode("utf-8").split('\t')
+        userid = single_line[1]
+        userids.add(userid)
 
-print count, total_test_num, (float(count)/float(total_test_num)), len(userids)
+    count = 0
+    for lines in test_lines:
+        single_line = lines.decode("utf-8").split('\t')
+        userid = single_line[1]
+        if userid in userids:
+            count += 1
+
+    print count, total_test_num, (float(count)/float(total_test_num)), len(userids), len(train_lines)

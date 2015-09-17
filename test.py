@@ -9,7 +9,7 @@ def sort_by_value_dec(d):
     return [backitems[i][1] for i in range(0, len(backitems))]
 
 
-dic = {1: 8, 2: 1, 4: 4}
-
-dic_sort = sort_by_value_dec(dic)
-print dic_sort
+a = [1, 3, 5, 7]
+b = [1, 3, 4, 6, 8]
+c = list(set(b)-set(a))
+print c
