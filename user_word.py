@@ -15,7 +15,7 @@ def user_only_add(f_train_lines, f_test_lines):
     start_inside = time.time()
     for index in range(len(f_train_lines)):
         single_line = f_train_lines[index].decode("utf-8").split('\t')
-        userid = single_line[1]
+        userid = single_line[0]
         f_num = int(single_line[3])
         c_num = int(single_line[4])
         l_num = int(single_line[5])
@@ -50,8 +50,8 @@ def user_only_add(f_train_lines, f_test_lines):
     start = time.time()
     for line in f_test_lines:
         single_line = line.decode("utf-8").split('\t')
-        userid = single_line[1]
-        weiboid = single_line[0]
+        userid = single_line[0]
+        weiboid = single_line[1]
         out_str = userid + '\t' + weiboid + '\t'
         out_f = 0
         out_c = 0
@@ -68,6 +68,7 @@ def user_only_add(f_train_lines, f_test_lines):
     end = time.time()
     print 'compute result fininshed with: ' + str(end - start)
     return test_userid_value
+
 
 def user_word(f_train_lines, f_test_lines):
     pass

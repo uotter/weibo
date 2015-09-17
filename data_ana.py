@@ -14,13 +14,13 @@ def caculate_userids_proportion(train_lines, test_lines):
 
     for lines in train_lines:
         single_line = lines.decode("utf-8").split('\t')
-        userid = single_line[1]
+        userid = single_line[0]
         userids.add(userid)
 
     count = 0
     for lines in test_lines:
         single_line = lines.decode("utf-8").split('\t')
-        userid = single_line[1]
+        userid = single_line[0]
         if userid in userids:
             count += 1
 
