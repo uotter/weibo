@@ -1,5 +1,6 @@
 import io
 import util
+
 __author__ = 'M'
 
 
@@ -45,8 +46,20 @@ def get_target_distribution(train_lines):
         else:
             dic_l[l_num] = 1
     f_key_list = util.sort_by_value_dec(dic_f)
+    c_key_list = util.sort_by_value_dec(dic_c)
+    l_key_list = util.sort_by_value_dec(dic_l)
+    write_list = ['-----------------forward analysis-----------------\n']
     for key in f_key_list:
-        print str(key) + ': ' + str(dic_f[key]) + ' with ' + str(float(dic_f[key]) / float(total_num))
+        write_list.append(str(key) + ': ' + str(dic_f[key]) + ' with ' + str(float(dic_f[key]) / float(total_num))+'\n')
+    write_list.append("-----------------comment analysis-----------------\n")
+    for key in c_key_list:
+        write_list.append(str(key) + ': ' + str(dic_c[key]) + ' with ' + str(float(dic_c[key]) / float(total_num))+'\n')
+    write_list.append("-----------------like analysis-----------------\n")
+    for key in l_key_list:
+        write_list.append(str(key) + ': ' + str(dic_l[key]) + ' with ' + str(float(dic_l[key]) / float(total_num))+'\n')
+    write_file = open('./target_num_percent.txt', 'w')
+    write_file.writelines(write_list)
+    write_file.close()
 
 
 f_train = open(".//data//weibo_train_data//weibo_train_data_new.txt")
