@@ -1,4 +1,4 @@
-import io
+import io_weibo
 import util
 
 __author__ = 'M'

@@ -6,6 +6,8 @@ __author__ = 'M'
 
 f_train = open(".//data//weibo_train_data//weibo_train_data_new.txt")
 f_test = open(".//data//weibo_predict_data//weibo_predict_data_new.txt")
+stop_words_file_c = open(".//dic//stopwords_c.txt")
+stop_words_file_e = open(".//dic//stopwords_e.txt")
 
 
 def read_train_test():
@@ -20,14 +22,16 @@ def read_train_test():
     return f_train_lines, f_test_lines
 
 
-def random_only_train(test_size):
+def random_only_train(total_num, test_size):
     start = time.time()
     f_train_lines = f_train.readlines()
+    if total_num >= 1:
+        f_train_lines = f_train_lines[:total_num]
     end = time.time()
     print 'read train file fininshed with: ' + str(end - start)
     start = time.time()
     f_train_size = len(f_train_lines)
-    # ´ÓlistÖĞËæ»ú»ñÈ¡Èô¸É¸öÔªËØ£¬×÷ÎªÒ»¸öÆ¬¶Ï·µ»Ø
+    # ï¿½ï¿½listï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½É¸ï¿½Ôªï¿½Ø£ï¿½ï¿½ï¿½ÎªÒ»ï¿½ï¿½Æ¬ï¿½Ï·ï¿½ï¿½ï¿½
     random_test_lines = random.sample(f_train_lines, int(f_train_size * test_size))
     random_train_lines = list(set(f_train_lines) - set(random_test_lines))
     end = time.time()
